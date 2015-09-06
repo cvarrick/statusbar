@@ -2,7 +2,6 @@
 
 #TODO fix size calc for dual monitors
 CURRENT_XRES=$(xrandr |grep current|cut -d, -f2 | cut -d" " -f3) 
-CURRENT_XRES=1050
 
 #Some Dzen setup
 BASEPATH="~/statusbar/"
@@ -11,21 +10,36 @@ FONT="-*-terminus-medium-*-*-*-14-*-*-*-*-*-*-*"
 FGCOLOR="#666666"
 BGCOLOR="#000000"
 WIDTH=$(($CURRENT_XRES/2))
+WIDTH=800
 HEIGHT=16
 XPOS=$(($CURRENT_XRES - $WIDTH))
 YPOS=0
+if [[ -e ~/.display2 ]]; then
+	YPOS=780
+fi
 DELIM="^fg(#333333) | ^fg()"
-NOWPLAYING_TEXT_SIZE=44
+NOWPLAYING_TEXT_SIZE=60
 NOWPLAYING=""
 #Initialize timer counters
 UNREAD_TIMER=0
 WEATHER_TIMER=0
 
+MPD_HOST='localhost'
+
 #main loop
 while true; do
 
-	###Check that AC is connected
-	. ${BASEPATH}ac_test.bash
+  ### Show battery if not connected to AC
+  AC_STATE=$(cat /proc/acpi/ac_adapter/AC/state | sed -e 's/state:[ \t]*//' -e 's/ *$//')
+  if [ $AC_STATE != "on-line" ]
+  then
+    # CHARGE=$(acpi -b | awk -F, '{print $2}')
+    TIME_REMAINING=$(acpi -b | awk '{print $5}')
+    BATTERY="^fg(#CAE34F)${TIME_REMAINING}$DELIM"
+  else
+    BATTERY=""
+  fi
+
 
 	### Date and Time
 	DATE=$(date +"%a, %b %d${DELIM}%H:%M^fn("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*"):%S^fn()")
@@ -142,12 +156,12 @@ fi
 
 ### Put the string togather
 #echo ${NOWPLAYING}${DELIM}${CPUTEMP}${DELIM}${UNREAD}${DELIM}${WEATHER}${DELIM}${DATE}${LOGOUT}
-echo ${NOWPLAYING}${DELIM}${CPUTEMP}${DELIM}${WEATHER}${DELIM}${DATE}${LOGOUT}
+echo ${NOWPLAYING}${DELIM}${BATTERY}${CPUTEMP}${DELIM}${WEATHER}${DELIM}${DATE}${LOGOUT}
 
 #Increment timers
 ((WEATHER_TIMER=WEATHER_TIMER-1))
 #	((UNREAD_TIMER=UNREAD_TIMER-1))
 sleep 1
 
-done | dzen2 -fn $FONT -fg $FGCOLOR -bg $BGCOLOR -ta r -x $XPOS -h $HEIGHT -tw $WIDTH -u
+done | dzen2 -fn $FONT -fg $FGCOLOR -bg $BGCOLOR -ta r -x $XPOS -y $YPOS -h $HEIGHT -tw $WIDTH -u 
 
