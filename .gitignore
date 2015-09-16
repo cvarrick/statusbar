@@ -1,0 +1,16 @@
+*.swp*
+*.swo*
+*.un~*
+
+ac_test.bash
+dzen_notify.bash
+error.log
+get_unseen_mail_counts.pl
+icons
+mailtest.pl
+now_playing.txt
+pa_change_port.bash
+pianobar_event.sh
+statusbar.log
+toggle_mute.sh
+unseenCount.txt

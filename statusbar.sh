@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #TODO fix size calc for dual monitors
-CURRENT_XRES=$(xrandr |grep current|cut -d, -f2 | cut -d" " -f3) 
+CURRENT_XRES=$(xrandr |grep current|cut -d, -f2 | cut -d" " -f3)
 
 #Some Dzen setup
 BASEPATH="~/statusbar/"
@@ -10,7 +10,6 @@ FONT="-*-terminus-medium-*-*-*-14-*-*-*-*-*-*-*"
 FGCOLOR="#666666"
 BGCOLOR="#000000"
 WIDTH=$(($CURRENT_XRES/2))
-WIDTH=800
 HEIGHT=16
 XPOS=$(($CURRENT_XRES - $WIDTH))
 YPOS=0
@@ -35,11 +34,11 @@ while true; do
   then
     # CHARGE=$(acpi -b | awk -F, '{print $2}')
     TIME_REMAINING=$(acpi -b | awk '{print $5}')
+    #TODO add context aware color
     BATTERY="^fg(#CAE34F)${TIME_REMAINING}$DELIM"
   else
     BATTERY=""
   fi
-
 
 	### Date and Time
 	DATE=$(date +"%a, %b %d${DELIM}%H:%M^fn("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*"):%S^fn()")
@@ -48,20 +47,20 @@ while true; do
 	## CPU Temp
 	CPUTEMP=`acpi -ft | grep "Thermal 0" |sed -e 's/Thermal [01]:.*\,//' -e 's/degrees.*//'`
 
-	CPUTEMP_INT=`echo "($CPUTEMP+0.5)/1" | bc`	
+	CPUTEMP_INT=`echo "($CPUTEMP+0.5)/1" | bc`
 
-	if [ $CPUTEMP_INT -gt 200 ] 
+	if [ $CPUTEMP_INT -gt 200 ]
 	then
 		CPUTEMPCOLOR='#DF0101'
 
-	elif [ $CPUTEMP_INT -gt 165  ] 
+	elif [ $CPUTEMP_INT -gt 165  ]
 	then
 		CPUTEMPCOLOR='#8A2908'
 	else
 		CPUTEMPCOLOR=$FGCOLOR
 	fi
 
-	CPUTEMP="^fg(${CPUTEMPCOLOR})${CPUTEMP}^bg()  "
+	CPUTEMP="^fg(${CPUTEMPCOLOR})${CPUTEMP}^bg()"
 
 	##Weather
 	[ $WEATHER_TIMER == -1 ] && {
@@ -75,7 +74,7 @@ while true; do
 #VOL=$(amixer get Master |grep -o [0-9]*% | cut -d% -f1 > ~/testpipe )
 #	echo "<vol> $(amixer get Master |grep -o [0-9]*% | cut -d% -f1  )" > /home/joneill/testpipe
 #
-#        echo "$t" | grep -q "^<vol>" 
+#        echo "$t" | grep -q "^<vol>"
 #	if [ $? -eq 0 ]; then
 #	  VOL=${t:5}
 #	fi
@@ -88,7 +87,7 @@ while true; do
 #	ICONCOLOR=$FGCOLOR
 #	for i in ${UNREAD_ARRAY[@]}
 #		do
-#			if [ "$i" -gt 0 ] 
+#			if [ "$i" -gt 0 ]
 #			then
 #				UNREADCOLOR='#00AC58'
 #				ICONCOLOR=$UNREADCOLOR
@@ -104,14 +103,14 @@ while true; do
 #	UNREAD_TIMER=3
 #	}
 
-if [ "$(pidof ncmpcpp)" ]; then
+if [ "$(pidof mpd)" ]; then
 
 	NOWPLAYING=$(mpc  -h $MPD_HOST|sed -n 2p)
 	if [ $(echo "$NOWPLAYING" | grep "paused") ]; then
 		NOWPLAYING="--PAUSED--"
 	else
 	NOWPLAYING=$(mpc -h $MPD_HOST -f "%file%~%name%~%artist%~%title%"| head -n 1)
-	IFS='~' 
+	IFS='~'
 	set $NOWPLAYING
 	if [ $(echo $NOWPLAYING|grep "^http") ]
 	then
@@ -146,12 +145,13 @@ if [ "$(pidof ncmpcpp)" ]; then
 		[[ $pos -lt 0 ]] && pos=0
 		((pos > ${#NOWPLAYING} - NOWPLAYING_TEXT_SIZE)) && pos=$((${#NOWPLAYING} - NOWPLAYING_TEXT_SIZE))
 	fi
-	#NOWPLAYING="^ca(1,dzen_pianobar.bash)${NOWPLAYING}^ca()"
+NOWPLAYING="^fn("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*")(mpd) ${NOWPLAYING:$pos:$NOWPLAYING_TEXT_SIZE}^fn()"
 fi
 	else
-		NOWPLAYING="--"
+		NOWPLAYING=""
 fi
-	NOWPLAYING="^fn("-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*")${NOWPLAYING:$pos:$NOWPLAYING_TEXT_SIZE}^fn()"
+
+
 ###### Logout button
 
 ### Put the string togather
@@ -163,5 +163,5 @@ echo ${NOWPLAYING}${DELIM}${BATTERY}${CPUTEMP}${DELIM}${WEATHER}${DELIM}${DATE}$
 #	((UNREAD_TIMER=UNREAD_TIMER-1))
 sleep 1
 
-done | dzen2 -fn $FONT -fg $FGCOLOR -bg $BGCOLOR -ta r -x $XPOS -y $YPOS -h $HEIGHT -tw $WIDTH -u 
+done | dzen2 -fn $FONT -fg $FGCOLOR -bg $BGCOLOR -ta r -x $XPOS -y $YPOS -h $HEIGHT -tw $WIDTH -u
 
