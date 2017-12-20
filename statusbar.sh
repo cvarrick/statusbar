@@ -34,7 +34,7 @@ while true; do
   if [ $AC_STATE != "1" ]
   then
     # CHARGE=$(acpi -b | awk -F, '{print $2}')
-    TIME_REMAINING=$(acpi -b | awk '{print $5}')
+    TIME_REMAINING=$(acpi -b | head -n 1 |awk '{print $5}')
     #TODO add context aware color
     BATTERY="^fg(#CAE34F)${TIME_REMAINING}$DELIM"
   else
@@ -103,7 +103,7 @@ while true; do
 #	UNREAD_TIMER=3
 #	}
 
-if [ "$(pidof mpd)" ]; then
+if [ "$(pidof mpd)" ] || [ "$(pidof mopidy)"] ; then
 
   NOWPLAYING=$(mpc  -h $MPD_HOST|sed -n 2p)
   if [ $(echo "$NOWPLAYING" | grep "paused") ]; then
@@ -152,7 +152,7 @@ else
 fi
 
 if [ "$(pidof pianobar)" ]; then
-  NOWPLAYING=$(cat ~/.config/pianobar/nowplaying)
+  NOWPLAYING=$(cat ~/.config/pianobar/statusbar)
 fi
 
 ### Put the string togather
